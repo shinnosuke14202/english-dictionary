@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Dictionary" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-<!--         <item name="colorPrimary">#F1F1F1</item>-->
+         <item name="colorPrimary">#222222</item>
     </style>
 
     <style name="Theme.Dictionary" parent="Base.Theme.Dictionary" />

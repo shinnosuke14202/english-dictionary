@@ -1,7 +1,6 @@
 package com.example.dictionary.network
 
-import android.util.Log
-import com.example.dictionary.model.Word
+import com.example.dictionary.features.word.Word
 import com.example.dictionary.utils.BASE_URL
 import com.example.dictionary.utils.parseHtml
 import okhttp3.CookieJar
@@ -28,8 +27,11 @@ class DictionarySite {
         val response: Response = webClient.httpGet(url)
         val document: Document = response.parseHtml()
 
-        val wordElements: Elements =
-            document.select(".page .pr.dictionary[data-id=cald4] .pr.entry-body__el")
+        val ids = listOf("cald4", "cbed")
+        val wordElements: Elements = ids
+            .asSequence()
+            .map { id -> document.select(".page .pr.dictionary[data-id=$id] .pr.entry-body__el") }
+            .firstOrNull { it.isNotEmpty() } ?: Elements()
 
         for (e in wordElements) {
             val title = e.select(".di-title .headword").text()
@@ -47,6 +49,7 @@ class DictionarySite {
             }
 
             val newWord = Word(
+                id = 0,
                 title,
                 type,
                 ipa,

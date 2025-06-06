@@ -1,21 +1,30 @@
 package com.example.dictionary.features.search
 
 import android.os.Bundle
-import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import com.example.dictionary.databinding.FragmentSearchBinding
 import androidx.appcompat.R.id.search_src_text
+import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.dictionary.R
+import com.example.dictionary.data.local.AppDatabase
+import com.example.dictionary.data.local.WordDao
+import com.example.dictionary.data.local.WordRepository
 import com.example.dictionary.features.detail.DetailFragment
-import com.example.dictionary.model.Word
+import com.example.dictionary.features.word.WordViewModel
+import com.example.dictionary.features.word.Word
+import com.example.dictionary.features.word.WordViewModelFactory
+import com.example.dictionary.network.DictionarySite
 import com.example.dictionary.utils.UiState
 
 class SearchFragment : Fragment() {
@@ -24,7 +33,20 @@ class SearchFragment : Fragment() {
     private lateinit var viewModel: WordViewModel
     private lateinit var imm: InputMethodManager
 
+    private lateinit var popup: ListPopupWindow
+    private lateinit var suggestAdapter: ArrayAdapter<String>
+
     private val words = ArrayList<Word>()
+    private val suggestions = mutableListOf<String>()
+
+    private val db by lazy {
+        AppDatabase.getInstance(requireContext())
+    }
+    private val dictionarySite = DictionarySite()
+    private val wordRepository by lazy {
+        WordRepository(db.wordDao())
+    }
+
     private var index = 0
 
     override fun onCreateView(
@@ -36,7 +58,10 @@ class SearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this)[WordViewModel::class.java]
+        viewModel = ViewModelProvider(
+            this,
+            WordViewModelFactory(dictionarySite, wordRepository)
+        )[WordViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,6 +71,7 @@ class SearchFragment : Fragment() {
             getSystemService(requireContext(), InputMethodManager::class.java) as InputMethodManager
 
         setupSearchView()
+        setupPopUp()
         setupWordMeaning()
     }
 
@@ -66,6 +92,43 @@ class SearchFragment : Fragment() {
         }
     }
 
+    private fun setupPopUp() {
+        popup = ListPopupWindow(requireContext())
+
+        // Set margin top (vertical offset)
+        val marginTopPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 20f, resources.displayMetrics
+        ).toInt()
+        popup.verticalOffset = marginTopPx
+
+        // Set popup height dynamically
+        val maxHeightPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 300f, resources.displayMetrics
+        ).toInt()
+
+        popup.height = maxHeightPx
+
+        popup.anchorView = binding.searchView
+        popup.setBackgroundDrawable(
+            ContextCompat.getDrawable(
+                requireContext(), R.drawable.rounded_border
+            )
+        )
+        suggestAdapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_list_item_1, suggestions
+        )
+        popup.setAdapter(
+            suggestAdapter
+        )
+        popup.setOnItemClickListener { _, _, position, _ ->
+            binding.searchView.setQuery(suggestions[position], true)
+            imm.hideSoftInputFromWindow(
+                binding.searchView.windowToken, 0
+            )
+            popup.dismiss()
+        }
+    }
+
     private fun setupSearchView() {
         val searchEditText = binding.searchView.findViewById<EditText>(search_src_text)
 
@@ -82,11 +145,19 @@ class SearchFragment : Fragment() {
                     searchWord(query.toString())
                     imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
                     binding.searchView.clearFocus()
+                    popup.dismiss()
                 }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                val query = newText.orEmpty().trim()
+                if (query.isNotEmpty()) {
+                    getWordSuggestions(query)
+                    if (!popup.isShowing) {
+                        popup.show()
+                    }
+                }
                 return true
             }
         })
@@ -128,6 +199,27 @@ class SearchFragment : Fragment() {
             binding.tvMeaning.text = currentWord.meaning
             val currentIndex = "${index + 1}/${words.size}"
             binding.tvIndex.text = currentIndex
+        }
+    }
+
+    private fun getWordSuggestions(word: String) {
+        viewModel.getWordSuggestion(word)
+        viewModel.suggestUiState.observe(viewLifecycleOwner) {
+            when (it) {
+                UiState.Loading -> {}
+
+                is UiState.Error -> {
+                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                }
+
+                is UiState.Success<List<String>> -> {
+                    binding.progressIndicator.visibility = View.GONE
+                    index = 0
+                    suggestions.clear()
+                    suggestions.addAll(it.data)
+                    suggestAdapter.notifyDataSetChanged()
+                }
+            }
         }
     }
 
