@@ -6,4 +6,5 @@
     <color name="purple">#4B33E1</color>
     <color name="background_card">#F1F1F1</color>
     <color name="text_main">#0D0D25</color>
+    <color name="grey">#e0e1dd</color>
 </resources>

@@ -74,6 +74,7 @@ class DetailFragment : Fragment() {
         binding.tvTitle.text = word.title
         binding.tvIpa.text = word.ipa
         binding.tvMeaning.text = word.meaning
+        binding.tvType.text = word.type
 
         binding.ibBookmark.setOnClickListener {
             handleBookmark()
@@ -92,20 +93,13 @@ class DetailFragment : Fragment() {
 
     private fun setupBookmark() {
         viewModel.getAllWords()
-        lifecycleScope.launch {
-            viewModel.allWords.collect {
-                Log.i("test", it.toString())
-            }
-        }
         viewModel.getWordsByTitle(word.title)
         lifecycleScope.launch {
             viewModel.wordsByTitle.collect { words ->
                 isBookmarked = words.isNotEmpty()
                 if (isBookmarked) {
-                    Log.i("test", "bookmarked")
                     binding.ibBookmark.setImageResource(R.drawable.baseline_bookmark_added_24)
                 } else {
-                    Log.i("test", "not bookmark")
                     binding.ibBookmark.setImageResource(R.drawable.baseline_bookmark_add_24)
                 }
             }

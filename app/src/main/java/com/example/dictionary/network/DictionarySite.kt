@@ -1,5 +1,6 @@
 package com.example.dictionary.network
 
+import android.util.Log
 import com.example.dictionary.features.word.Word
 import com.example.dictionary.utils.BASE_URL
 import com.example.dictionary.utils.parseHtml
@@ -27,39 +28,50 @@ class DictionarySite {
         val response: Response = webClient.httpGet(url)
         val document: Document = response.parseHtml()
 
-        val ids = listOf("cald4", "cbed")
-        val wordElements: Elements = ids
-            .asSequence()
-            .map { id -> document.select(".page .pr.dictionary[data-id=$id] .pr.entry-body__el") }
-            .firstOrNull { it.isNotEmpty() } ?: Elements()
+        val ids = listOf("cald4", "cbed", "cacd")
+        val nextBody = listOf(".pr.entry-body__el", ".pr.di.superentry")
 
-        for (e in wordElements) {
-            val title = e.select(".di-title .headword").text()
-            val type = e.select(".posgram .pos.dpos").eachText().joinToString { "," }
-            val soundUrl: String =
-                BASE_URL + e.select(".uk.dpron-i source[type=audio/mpeg]").attr("src")
-            val ipa = e.select(".uk.dpron-i .pron.dpron").text()
+        val wordElements = ids.asSequence().mapNotNull { id ->
+                document.select(".page .pr.dictionary[data-id=$id]").takeIf { it.isNotEmpty() }
+            }.map { dictElement ->
+                nextBody.asSequence().map { body -> dictElement.select(body) }
+                    .firstOrNull { it.isNotEmpty() } ?: dictElement
+            }.firstOrNull() ?: Elements()
 
-            val wordBody: Element? = e.select(".pos-body .pr.dsense .def-block").first()
-            val meaning: String? = wordBody?.select(".def.ddef_d")?.text()
+        if (wordElements.isNotEmpty()) {
+            for (e in wordElements) {
+                val title = e.select(".di-title .headword").text().trim()
 
-            val examples = ArrayList<String>()
-            wordBody?.select(".examp.dexamp .eg")?.forEach { ex ->
-                examples.add(ex.text())
+                val type =
+                    e.select(".posgram .pos.dpos, .di-info .pos.dpos").eachText().joinToString(", ")
+
+                val ipa = e.select(".uk.dpron-i .pron.dpron").text().trim()
+                val soundUrl = e.select(".uk.dpron-i source[type=audio/mpeg]").attr("src").let {
+                    if (it.startsWith("/")) BASE_URL + it else it
+                }
+
+                val wordBody: Element? = e.selectFirst(".pos-body .pr.dsense .def-block")
+                    ?: e.selectFirst(".idiom-body.didiom-body")
+
+                val meaning: String? = wordBody?.selectFirst(".def.ddef_d, .def.ddef_d.db")?.text()
+
+                val examples = wordBody?.select(".examp.dexamp .eg")?.map { it.text() }
+                    ?.toCollection(ArrayList()) ?: arrayListOf()
+
+                val newWord = Word(
+                    id = 0,
+                    title = title,
+                    type = type,
+                    ipa = ipa,
+                    soundUrl = soundUrl,
+                    meaning = meaning ?: "No meaning found!",
+                    examples = examples
+                )
+
+                results.add(newWord)
             }
-
-            val newWord = Word(
-                id = 0,
-                title,
-                type,
-                ipa,
-                soundUrl,
-                meaning ?: "No meaning found!",
-                examples
-            )
-
-            results.add(newWord)
         }
+
         if (results.isEmpty()) throw Exception("Word not found!")
         return results
     }

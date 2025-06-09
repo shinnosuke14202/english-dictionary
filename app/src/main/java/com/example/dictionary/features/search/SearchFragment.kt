@@ -16,6 +16,7 @@ import androidx.appcompat.R.id.search_src_text
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.dictionary.R
 import com.example.dictionary.data.local.AppDatabase
 import com.example.dictionary.data.local.WordDao
@@ -26,6 +27,10 @@ import com.example.dictionary.features.word.Word
 import com.example.dictionary.features.word.WordViewModelFactory
 import com.example.dictionary.network.DictionarySite
 import com.example.dictionary.utils.UiState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SearchFragment : Fragment() {
 
@@ -48,6 +53,8 @@ class SearchFragment : Fragment() {
     }
 
     private var index = 0
+    private var searchJob: Job? = null
+    private var showPopUp = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -152,12 +159,20 @@ class SearchFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val query = newText.orEmpty().trim()
+
+                searchJob?.cancel()
                 if (query.isNotEmpty()) {
-                    getWordSuggestions(query)
-                    if (!popup.isShowing) {
-                        popup.show()
+                    searchJob = lifecycleScope.launch {
+                        delay(300)
+                        getWordSuggestions(query)
+                        if (!popup.isShowing && showPopUp) {
+                            popup.show()
+                        }
                     }
+                } else {
+                    if (popup.isShowing) popup.dismiss()
                 }
+
                 return true
             }
         })
@@ -171,11 +186,13 @@ class SearchFragment : Fragment() {
                     binding.llWord.visibility = View.GONE
                     binding.progressIndicator.visibility = View.VISIBLE
                     binding.tvIndex.visibility = View.GONE
+                    showPopUp = false
                 }
 
                 is UiState.Error -> {
                     Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
                     binding.progressIndicator.visibility = View.GONE
+                    showPopUp = true
                 }
 
                 is UiState.Success<List<Word>> -> {
@@ -186,6 +203,7 @@ class SearchFragment : Fragment() {
                     showWordMeaning()
                     binding.llWord.visibility = View.VISIBLE
                     binding.tvIndex.visibility = View.VISIBLE
+                    showPopUp = true
                 }
             }
         }
@@ -193,12 +211,13 @@ class SearchFragment : Fragment() {
 
     private fun showWordMeaning() {
         if (words.isNotEmpty()) {
-            binding.llWord.visibility = View.VISIBLE
+            searchJob?.cancel()
             val currentWord = words[index]
             binding.tvWord.text = currentWord.title
             binding.tvMeaning.text = currentWord.meaning
             val currentIndex = "${index + 1}/${words.size}"
             binding.tvIndex.text = currentIndex
+            binding.llWord.visibility = View.VISIBLE
         }
     }
 
