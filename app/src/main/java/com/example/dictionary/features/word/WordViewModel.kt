@@ -4,7 +4,8 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dictionary.data.local.WordRepository
+import com.example.dictionary.data.local.word.WordRepository
+import com.example.dictionary.model.Word
 import com.example.dictionary.network.DictionarySite
 import com.example.dictionary.utils.UiState
 import kotlinx.coroutines.Dispatchers

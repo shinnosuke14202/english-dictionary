@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/clSetting"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -11,8 +12,13 @@
     tools:context=".features.settings.SettingFragment">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="16dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -27,69 +33,63 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_border"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp">
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dark Mode"
-            android:textSize="18sp" />
+            android:background="@drawable/rounded_border"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dark Mode"
+                android:textSize="18sp" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.8" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/btnSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/purple" />
+
+        </LinearLayout>
 
         <Space
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.8" />
+            android:layout_width="match_parent"
+            android:layout_height="22dp" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/btnSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/purple" />
+        <LinearLayout
+            android:id="@+id/btnHistory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/rounded_border"
+            android:gravity="center|start"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="History"
+                android:textSize="18sp" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="22dp" />
+        </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/btnExport"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/rounded_border"
-        android:gravity="center|start"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Export Data"
-            android:textSize="18sp" />
 
     </LinearLayout>
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="22dp" />
-
-    <LinearLayout
-        android:id="@+id/btnClear"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/rounded_border"
-        android:gravity="center|start"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Clear Data"
-            android:textSize="18sp" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.example.dictionary.features.word
+package com.example.dictionary.model
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo

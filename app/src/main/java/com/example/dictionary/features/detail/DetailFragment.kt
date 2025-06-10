@@ -2,7 +2,6 @@ package com.example.dictionary.features.detail
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,14 +13,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.dictionary.R
 import com.example.dictionary.data.local.AppDatabase
-import com.example.dictionary.data.local.WordRepository
+import com.example.dictionary.data.local.word.WordRepository
 import com.example.dictionary.databinding.FragmentDetailBinding
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.model.Word
 import com.example.dictionary.features.word.WordViewModel
 import com.example.dictionary.features.word.WordViewModelFactory
 import com.example.dictionary.network.DictionarySite
 import com.example.dictionary.utils.SEARCH_WORD
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class DetailFragment : Fragment() {

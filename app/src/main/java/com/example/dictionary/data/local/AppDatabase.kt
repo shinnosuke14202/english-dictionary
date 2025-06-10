@@ -5,7 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.data.local.word.WordDao
+import com.example.dictionary.model.Word
 import com.example.dictionary.utils.Converters
 
 @Database(entities = [Word::class], version = 1, exportSchema = false)

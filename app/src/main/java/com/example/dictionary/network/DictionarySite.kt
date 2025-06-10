@@ -1,7 +1,6 @@
 package com.example.dictionary.network
 
-import android.util.Log
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.model.Word
 import com.example.dictionary.utils.BASE_URL
 import com.example.dictionary.utils.parseHtml
 import okhttp3.CookieJar

@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dictionary.databinding.ItemBookmarkBinding
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.model.Word
 
 class BookmarkRVAdapter(
     private val onClick: (Word) -> Unit,

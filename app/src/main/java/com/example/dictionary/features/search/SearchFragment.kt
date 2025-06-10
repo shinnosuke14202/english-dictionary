@@ -1,5 +1,7 @@
 package com.example.dictionary.features.search
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -9,26 +11,28 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.fragment.app.Fragment
-import com.example.dictionary.databinding.FragmentSearchBinding
 import androidx.appcompat.R.id.search_src_text
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.edit
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.dictionary.R
 import com.example.dictionary.data.local.AppDatabase
-import com.example.dictionary.data.local.WordDao
-import com.example.dictionary.data.local.WordRepository
+import com.example.dictionary.data.local.word.WordRepository
+import com.example.dictionary.databinding.FragmentSearchBinding
 import com.example.dictionary.features.detail.DetailFragment
 import com.example.dictionary.features.word.WordViewModel
-import com.example.dictionary.features.word.Word
 import com.example.dictionary.features.word.WordViewModelFactory
+import com.example.dictionary.model.Word
 import com.example.dictionary.network.DictionarySite
+import com.example.dictionary.utils.HISTORY_LIST
+import com.example.dictionary.utils.HISTORY_PREFS
 import com.example.dictionary.utils.UiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -37,6 +41,8 @@ class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
     private lateinit var viewModel: WordViewModel
     private lateinit var imm: InputMethodManager
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var popup: ListPopupWindow
     private lateinit var suggestAdapter: ArrayAdapter<String>
@@ -65,6 +71,10 @@ class SearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        sharedPreferences =
+            requireContext().getSharedPreferences(HISTORY_PREFS, Context.MODE_PRIVATE)
+
         viewModel = ViewModelProvider(
             this,
             WordViewModelFactory(dictionarySite, wordRepository)
@@ -207,17 +217,18 @@ class SearchFragment : Fragment() {
                 }
             }
         }
+        addToHistory(word)
     }
 
     private fun showWordMeaning() {
         if (words.isNotEmpty()) {
             searchJob?.cancel()
+            binding.llWord.visibility = View.VISIBLE
             val currentWord = words[index]
             binding.tvWord.text = currentWord.title
             binding.tvMeaning.text = currentWord.meaning
             val currentIndex = "${index + 1}/${words.size}"
             binding.tvIndex.text = currentIndex
-            binding.llWord.visibility = View.VISIBLE
         }
     }
 
@@ -239,6 +250,13 @@ class SearchFragment : Fragment() {
                     suggestAdapter.notifyDataSetChanged()
                 }
             }
+        }
+    }
+
+    private fun addToHistory(title: String) {
+        val history = sharedPreferences.getString(HISTORY_LIST, "") ?: ""
+        lifecycleScope.launch(Dispatchers.IO) {
+            sharedPreferences.edit { putString(HISTORY_LIST, "${title},${history}") }
         }
     }
 

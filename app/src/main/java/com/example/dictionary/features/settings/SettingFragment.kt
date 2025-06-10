@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.dictionary.R
 import com.example.dictionary.databinding.FragmentSettingBinding
+import com.example.dictionary.features.history.HistoryFragment
 
 class SettingFragment : Fragment() {
 
@@ -16,6 +18,14 @@ class SettingFragment : Fragment() {
     ): View {
         binding = FragmentSettingBinding.inflate(layoutInflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnHistory.setOnClickListener {
+            requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null)
+                .replace(R.id.clSetting, HistoryFragment.newInstance()).commit()
+        }
     }
 
     companion object {

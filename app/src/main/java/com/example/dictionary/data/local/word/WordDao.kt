@@ -1,10 +1,9 @@
-package com.example.dictionary.data.local
+package com.example.dictionary.data.local.word
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.model.Word
 import kotlinx.coroutines.flow.Flow
 
 @Dao

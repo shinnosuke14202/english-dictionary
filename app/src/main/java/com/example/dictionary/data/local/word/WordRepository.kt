@@ -1,6 +1,6 @@
-package com.example.dictionary.data.local
+package com.example.dictionary.data.local.word
 
-import com.example.dictionary.features.word.Word
+import com.example.dictionary.model.Word
 
 class WordRepository(private val wordDao: WordDao) {
     fun getAllWords() = wordDao.getAll()
